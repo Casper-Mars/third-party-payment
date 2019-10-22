@@ -15,7 +15,7 @@ public class PayCommon implements Serializable {
     /**
      * 支付订单号
      */
-    private String outTradeNo;
+    private OutTradeNoBo outTradeNo;
 
     /**
      * 服务器异步通知页面路径
@@ -52,7 +52,7 @@ public class PayCommon implements Serializable {
      * @return
      */
     public PayCommon(String paySn, BigDecimal amount, String serverPath, String body, String title, String ip) {
-        this.outTradeNo = paySn;
+        this.outTradeNo = new OutTradeNoBo(paySn);
         this.notifyUrl = serverPath;
         this.payAmount = amount;
         this.title = title;

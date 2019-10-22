@@ -10,6 +10,7 @@ import com.alipay.api.response.AlipayTradeRefundResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.r.base.payment.config.AlipayConfig;
 import org.r.base.payment.dto.NotifyDTO;
+import org.r.base.payment.entity.OutTradeNoBo;
 import org.r.base.payment.entity.PayCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
@@ -75,7 +76,7 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         String tradeNo = request.getParameter("trade_no");
         String tradeStatus = request.getParameter("trade_status");
         String outTradeNo = request.getParameter("out_trade_no");
-        outTradeNo = outTradeNo.split("_")[0];
+        outTradeNo = OutTradeNoBo.extractPaySn(outTradeNo);
         log.info("接收到支付宝异步通知:out_trade_no:" + outTradeNo + " trade_no：" + tradeNo + " trade_status_str:" + tradeStatus);
         log.info("接收到支付宝异步通知：" + request.getParameterMap().toString());
         if (StringUtils.isEmpty(tradeNo) || StringUtils.isEmpty(tradeStatus) || StringUtils.isEmpty(outTradeNo) || !outTradeNo.equals(billSn)) {

@@ -37,7 +37,7 @@ public class AlipayMobilePaymentServiceImpl extends AbstractAlipayServiceImpl<Al
         /*自定义数据，不知道设置什么的*/
         model.setSubject(requestParam.getTitle());
         //请保证OutTradeNo值每次保证唯一，唯一识别号，订单id
-        model.setOutTradeNo(requestParam.getOutTradeNo());
+        model.setOutTradeNo(requestParam.getOutTradeNo().getOutTradeNo());
         /*设置超时时间*/
         model.setTimeoutExpress("30m");
         /*设置金额*/

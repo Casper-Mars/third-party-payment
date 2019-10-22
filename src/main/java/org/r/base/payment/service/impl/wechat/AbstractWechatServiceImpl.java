@@ -73,7 +73,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         param.put("nonce_str", this.createNoncestr());
         param.put("spbill_create_ip", requestParam.getRemoteIp());
         param.put("body", requestParam.getBody());
-        param.put("out_trade_no", requestParam.getOutTradeNo());
+        param.put("out_trade_no", requestParam.getOutTradeNo().getOutTradeNo());
         param.put("total_fee", String.valueOf(requestParam.getPayAmount().multiply(new BigDecimal(100)).intValue()));
         param.put("notify_url", requestParam.getNotifyUrl());
         param.put("sign", this.sign(param, wechatPayConfig.getApiKey()));
