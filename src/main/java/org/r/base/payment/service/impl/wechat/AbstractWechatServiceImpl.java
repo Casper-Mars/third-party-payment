@@ -20,6 +20,8 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Random;
@@ -164,10 +166,19 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     @Override
     public NotifyDTO notifyCallBack(HttpServletRequest request, HttpServletResponse response, String billSn) {
         /*------------获取返回的参数------------*/
-        Map<String, String> params = new TreeMap<>();
-        for (Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
-            params.put(param.getKey(), param.getValue()[0]);
+        Map<String, String> params = new TreeMap<>(String::compareToIgnoreCase);
+        String tmp = null;
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = request.getReader()) {
+            while ((tmp = reader.readLine()) != null) {
+                sb.append(tmp);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        XMLUtils xmlUtils = new XMLUtils(sb.toString());
+        Map<String, Object> stringObjectMap = xmlUtils.toMap();
+        stringObjectMap.forEach((k, v) -> params.put(k, (String) v));
 
         /*------------校验签名------------*/
         /*获取返回的签名*/

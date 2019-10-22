@@ -40,10 +40,11 @@ public class PaymentServiceTest {
 
     @Test
     public void pay() {
+        String paySn = "POD20191016782539";
         PayCommon payCommon = new PayCommon(
-                "testsn1231",
+                paySn,
                 new BigDecimal("0.01"),
-                "http://39.108.88.133/api/api/notify",
+                "http://39.108.88.133/api/api/pay/notify/" + paySn,
                 "test pay",
                 "test pay",
                 "39.108.88.133"

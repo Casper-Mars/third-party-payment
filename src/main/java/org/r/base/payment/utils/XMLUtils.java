@@ -4,11 +4,14 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zj on 2019/3/27.
@@ -82,5 +85,61 @@ public class XMLUtils {
         return resList;
     }
 
+    /**
+     * 以xml节点名称作为key转化成map
+     *
+     * @return map
+     */
+    public Map<String, Object> toMap() {
+        return toMap(getRootElement());
+    }
 
+    /**
+     * 获取指定节点名的下的所有参数的map
+     *
+     * @param nodeName
+     * @return
+     */
+    public Map<String, Object> toMap(String nodeName) {
+        Element element = getElement(getRootElement(), nodeName);
+        return toMap(element);
+    }
+
+    /**
+     * 获取指定节点的下的所有参数的map
+     *
+     * @param root
+     * @return
+     */
+    private Map<String, Object> toMap(Element root) {
+        if (root == null) {
+            return new HashMap<>(1);
+        }
+        List children = root.getChildren();
+        return toMap(children);
+    }
+
+
+    /**
+     * 递归构造map
+     *
+     * @param list 数据源
+     * @return
+     */
+    private Map<String, Object> toMap(List list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return new HashMap<>(1);
+        }
+        Map<String, Object> result = new HashMap<>(10);
+        for (Object child : list) {
+            Element ele = (Element) child;
+            List children = ele.getChildren();
+            if (CollectionUtils.isEmpty(children)) {
+                result.put(ele.getName(), ele.getText());
+            } else {
+                result.put(ele.getName(), toMap(children));
+            }
+        }
+        return result;
+    }
 }
