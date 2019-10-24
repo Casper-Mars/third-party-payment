@@ -84,7 +84,7 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         }
 
         if (successStatus.equals(tradeStatus)) {
-            return new NotifyDTO(tradeNo, true, outTradeNo);
+            return new NotifyDTO(tradeNo, true, outTradeNo,"");
         } else {
             return NotifyDTO.fail();
         }

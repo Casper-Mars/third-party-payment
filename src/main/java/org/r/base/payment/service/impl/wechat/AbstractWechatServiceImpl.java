@@ -4,25 +4,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.jdom.Element;
 import org.r.base.payment.config.WechatPayConfig;
 import org.r.base.payment.dto.NotifyDTO;
-import org.r.base.payment.entity.PayCommon;
-import org.r.base.payment.entity.RefundCommon;
-import org.r.base.payment.entity.RequestBo;
-import org.r.base.payment.entity.RespondBo;
+import org.r.base.payment.entity.*;
 import org.r.base.payment.enums.ProtocolEnum;
 import org.r.base.payment.enums.RequestMethodEnum;
 import org.r.base.payment.exception.PayException;
 import org.r.base.payment.service.HttpRequestService;
 import org.r.base.payment.service.PaymentService;
+import org.r.base.payment.utils.SecurityUtils;
 import org.r.base.payment.utils.XDigestUtils;
 import org.r.base.payment.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -66,7 +74,6 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
 
         /*构造参数map，便于之后生成签名，使用treemap为了获得排序集合，满足微信支付文档的要求*/
         Map<String, String> param = new TreeMap<>(String::compareToIgnoreCase);
-
         param.put("appid", wechatPayConfig.getAppId());
         param.put("mch_id", wechatPayConfig.getMchid());
         param.put("trade_type", getTradeType());
@@ -76,6 +83,31 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         param.put("out_trade_no", requestParam.getOutTradeNo().getOutTradeNo());
         param.put("total_fee", String.valueOf(requestParam.getPayAmount().multiply(new BigDecimal(100)).intValue()));
         param.put("notify_url", requestParam.getNotifyUrl());
+        return build0(param);
+    }
+
+    /**
+     * 构建退款的参数
+     *
+     * @param refundCommon
+     * @return
+     */
+    protected String buildRefundParam(RefundCommon refundCommon) {
+        /*构造参数map，便于之后生成签名，使用treemap为了获得排序集合，满足微信支付文档的要求*/
+        Map<String, String> param = new TreeMap<>(String::compareToIgnoreCase);
+        param.put("appid", wechatPayConfig.getAppId());
+        param.put("mch_id", wechatPayConfig.getMchid());
+        param.put("nonce_str", this.createNoncestr());
+        param.put("out_refund_no", refundCommon.getOutRefundNo());
+        param.put("transaction_id", refundCommon.getTraceNo());
+        param.put("refund_fee", String.valueOf(refundCommon.getRefundFee().multiply(new BigDecimal(100)).intValue()));
+        param.put("total_fee", String.valueOf(refundCommon.getOrderFee().multiply(new BigDecimal(100)).intValue()));
+        param.put("notify_url", refundCommon.getNotifyUrl());
+        return build0(param);
+    }
+
+
+    private String build0(Map<String, String> param) {
         param.put("sign", this.sign(param, wechatPayConfig.getApiKey()));
 
         /*构造XML请求参数*/
@@ -89,6 +121,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         builder.append("</xml>");
         return builder.toString();
     }
+
 
     /**
      * 封装返回值
@@ -104,7 +137,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
      * @param requestResult 请求结果
      * @return
      */
-    protected String getReult(String requestResult) {
+    protected String getResult(String requestResult) {
         /*解析返回的结果，从结果中获取prepayid和noncestr*/
         XMLUtils xml = new XMLUtils(requestResult);
         Element root = xml.getRootElement();
@@ -141,18 +174,8 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     @Override
     public String pay(PayCommon payCommon) throws PayException {
         String param = buildParam(payCommon);
-        RequestBo requestBo = new RequestBo();
-        requestBo.setParam(param);
-        requestBo.setProtocol(ProtocolEnum.https);
-
-        RequestMethodEnum requestMethodEnum = RequestMethodEnum.of(wechatPayConfig.getRequestMethod());
-        if (requestMethodEnum == null) {
-            throw new RuntimeException("请求方法不存在，请查看微信支付的信息是否配置正确");
-        }
-        requestBo.setMethod(RequestMethodEnum.of(wechatPayConfig.getRequestMethod()));
-        requestBo.setUrl(wechatPayConfig.getGatewayUrl());
-        RespondBo respondBo = httpRequestService.doRequest(requestBo);
-        return getReult((String) respondBo.getResult());
+        RespondBo respondBo = doRequest(param,wechatPayConfig.getGatewayUrl());
+        return getResult((String) respondBo.getResult());
     }
 
     /**
@@ -166,19 +189,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     @Override
     public NotifyDTO notifyCallBack(HttpServletRequest request, HttpServletResponse response, String billSn) {
         /*------------获取返回的参数------------*/
-        Map<String, String> params = new TreeMap<>(String::compareToIgnoreCase);
-        String tmp = null;
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = request.getReader()) {
-            while ((tmp = reader.readLine()) != null) {
-                sb.append(tmp);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        XMLUtils xmlUtils = new XMLUtils(sb.toString());
-        Map<String, Object> stringObjectMap = xmlUtils.toMap();
-        stringObjectMap.forEach((k, v) -> params.put(k, (String) v));
+        Map<String, String> params = getResultFromCallBack(request);
 
         /*------------校验签名------------*/
         /*获取返回的签名*/
@@ -194,7 +205,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         /*------------校验返回的通信标记--------*/
         String returnCode = params.get("return_code");
         String returnMsg = params.get("return_msg");
-        if (StringUtils.isEmpty(returnCode) || !returnCode.equalsIgnoreCase("success")) {
+        if (StringUtils.isEmpty(returnCode) || !"success".equalsIgnoreCase(returnCode)) {
             log.error("payment:" + billSn + " " + returnMsg);
             return NotifyDTO.fail();
         }
@@ -202,7 +213,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         /*-------------校验返回的业务结果---------------*/
         String resultCode = params.get("result_code");
         String err = params.get("err_code_des");
-        if (StringUtils.isEmpty(resultCode) || !resultCode.equalsIgnoreCase("success")) {
+        if (StringUtils.isEmpty(resultCode) || !"success".equalsIgnoreCase(resultCode)) {
             log.error("payment:" + billSn + " " + err);
             return NotifyDTO.fail();
         }
@@ -215,7 +226,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         /*微信移动支付的支付流水号*/
         String tradeNo = params.get("transaction_id");
         if (!StringUtils.isEmpty(mchId) && !StringUtils.isEmpty(appid) && appid.equals(wechatPayConfig.getAppId()) && mchId.equals(wechatPayConfig.getMchid())) {
-            return new NotifyDTO(tradeNo, true, billSn);
+            return new NotifyDTO(tradeNo, true, billSn, "");
         } else {
             return NotifyDTO.fail();
         }
@@ -228,9 +239,42 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
      * @return
      */
     @Override
-    public Boolean refund(RefundCommon refundCommon) {
-        throw new RuntimeException("微信退款尚未实现");
+    public Boolean refund(RefundCommon refundCommon) throws PayException {
+
+        String param = buildRefundParam(refundCommon);
+        RespondBo respondBo = doRequest(param,wechatPayConfig.getRefundUrl());
+        String result = (String) respondBo.getResult();
+        /*检查返回值*/
+        Map<String, String> resultParam = getParam(result);
+        String returnCode = resultParam.get("return_code");
+        if (StringUtils.isEmpty(returnCode) || "FAIL".equalsIgnoreCase(returnCode)) {
+            log.error(String.format("wechat refund fail:%s", resultParam.get("return_msg")));
+            return false;
+        }
+        String resultCode = resultParam.get("result_code");
+        if (StringUtils.isEmpty(resultCode) || "FAIL".equalsIgnoreCase(resultCode)) {
+            log.error(String.format("wechat refund fail,err_code:%s,err_desc:%s", resultParam.get("err_code"), resultParam.get("err_code_des")));
+            return false;
+        }
+        return true;
     }
+
+
+    private RespondBo doRequest(String param,String url) throws PayException {
+        RequestBo requestBo = new RequestBo();
+        requestBo.setParam(param);
+        requestBo.setProtocol(getPayProtocol());
+
+        RequestMethodEnum requestMethodEnum = RequestMethodEnum.of(wechatPayConfig.getRequestMethod());
+        if (requestMethodEnum == null) {
+            throw new PayException("请求方法不存在，请查看微信支付的信息是否配置正确");
+        }
+        requestBo.setMethod(RequestMethodEnum.of(wechatPayConfig.getRequestMethod()));
+        requestBo.setUrl(url);
+        RespondBo respondBo = httpRequestService.doRequest(requestBo);
+        return respondBo;
+    }
+
 
     /**
      * 退款的通知回调
@@ -242,7 +286,42 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
      */
     @Override
     public NotifyDTO refundNotifyCallBack(HttpServletRequest request, HttpServletResponse response, String billSn) {
-        return null;
+
+        Map<String, String> params = getResultFromCallBack(request);
+        String isSusscess = params.get("return_code");
+        if (StringUtils.isEmpty(isSusscess) || "FAIL".equalsIgnoreCase(isSusscess)) {
+            return NotifyDTO.fail(params.get("return_msg"));
+        }
+
+        /*获取加密串A*/
+        String reqInfo = params.get("reqInfo");
+        log.info(String.format("获取到的加密信息:%s", reqInfo));
+        try {
+            /*对加密串A做base64解码，得到加密串B*/
+            String encryStrB = new String(XDigestUtils.decryptBASE64(reqInfo));
+            /*对商户key做md5，得到32位小写keyB*/
+            String keyB = XDigestUtils.md5Hex(wechatPayConfig.getApiKey());
+            /*用key*对加密串B做AES-256-ECB解密（PKCS7Padding）*/
+            String info = XDigestUtils.aes256EcbPKCS7PaddingDecrypt(encryStrB, keyB);
+            /*提取参数*/
+            Map<String, String> param = getParam(info);
+            String refundStatus = param.get("refund_status");
+            if (StringUtils.isEmpty(refundStatus) || !"SUCCESS".equalsIgnoreCase(refundStatus)) {
+                return NotifyDTO.fail();
+            }
+            String outTradeNo = param.get("outTradeNo");
+            if (StringUtils.isEmpty(outTradeNo) || !outTradeNo.equals(billSn)) {
+                return NotifyDTO.fail();
+            }
+            String transactionId = param.get("transactionId");
+            if (StringUtils.isEmpty(transactionId)) {
+                return NotifyDTO.fail();
+            }
+            return new NotifyDTO(transactionId, true, outTradeNo, "");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return NotifyDTO.fail();
     }
 
     /**
@@ -280,4 +359,80 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         }
         return res.toString();
     }
+
+
+    /**
+     * 获取回调的返回的参数
+     *
+     * @param request 请求信息
+     * @return
+     */
+    protected Map<String, String> getResultFromCallBack(HttpServletRequest request) {
+        /*------------获取返回的参数------------*/
+        String tmp = null;
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = request.getReader()) {
+            while ((tmp = reader.readLine()) != null) {
+                sb.append(tmp);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return getParam(sb.toString());
+    }
+
+    /**
+     * 从xml字符串转化成map
+     *
+     * @param result
+     * @return
+     */
+    protected Map<String, String> getParam(String result) {
+        Map<String, String> params = new TreeMap<>(String::compareToIgnoreCase);
+        XMLUtils xmlUtils = new XMLUtils(result);
+        Map<String, Object> stringObjectMap = xmlUtils.toMap();
+        stringObjectMap.forEach((k, v) -> params.put(k, (String) v));
+        return params;
+    }
+
+
+    /**
+     * 获取支付的协议信息
+     *
+     * @return
+     */
+    private ProtocolProvider getPayProtocol() {
+        return new ProtocolProvider() {
+            @Override
+            public ProtocolEnum getProtocolType() {
+                return ProtocolEnum.https;
+            }
+
+            @Override
+            public SSLContext getSslContext() throws NoSuchAlgorithmException {
+                return SSLContext.getInstance("TLS");
+            }
+
+            @Override
+            public KeyManager getKeyManager() throws KeyStoreException {
+
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                try {
+                    keyStore.load(new FileInputStream(wechatPayConfig.getP12CertPath()), wechatPayConfig.getMchid().toCharArray());
+                    KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+                    kmf.init(keyStore, wechatPayConfig.getMchid().toCharArray());
+                    return kmf.getKeyManagers()[0];
+                } catch (IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            public X509TrustManager getTrustManager() {
+                return SecurityUtils.getDefaultTrustManager();
+            }
+        };
+    }
+
 }

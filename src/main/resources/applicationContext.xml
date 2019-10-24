@@ -18,9 +18,11 @@
         <property name="apiKey" value="${wechat.apiKey}"/>
         <property name="appSecret" value="${wechat.appSecret}"/>
         <property name="gatewayUrl" value="${wechat.gatewayUrl}"/>
+        <property name="refundUrl" value="${wechat.refundUrl}"/>
         <property name="mchid" value="${wechat.mchid}"/>
         <property name="requestMethod" value="${wechat.requestMethod}"/>
         <property name="appId" value="${wechat.appId}"/>
+        <property name="p12CertPath" value="${wechat.p12CertPath}"/>
     </bean>
 
     <!--阿里支付配置-->

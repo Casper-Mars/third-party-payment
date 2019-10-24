@@ -1,6 +1,7 @@
 package org.r.base.payment.utils;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.omg.CORBA.REBIND;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -8,6 +9,7 @@ import sun.misc.BASE64Encoder;
 import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -16,7 +18,7 @@ import java.security.SecureRandom;
  * @author casper
  * @date 19-10-18 上午10:29
  **/
-public class XDigestUtils extends DigestUtils        {
+public class XDigestUtils extends DigestUtils {
     public static final String KEY_SHA = "SHA";
     public static final String KEY_MD5 = "MD5";
     public static final String ALGORITHM = "DES";
@@ -30,7 +32,7 @@ public class XDigestUtils extends DigestUtils        {
         int len = bytes.length;
         StringBuilder buf = new StringBuilder(len * 2);
 
-        for(int j = 0; j < len; ++j) {
+        for (int j = 0; j < len; ++j) {
             buf.append(HEX_DIGITS[bytes[j] >> 4 & 15]);
             buf.append(HEX_DIGITS[bytes[j] & 15]);
         }
@@ -107,7 +109,7 @@ public class XDigestUtils extends DigestUtils        {
     }
 
     public static String initKey() throws Exception {
-        return initKey((String)null);
+        return initKey((String) null);
     }
 
     public static String initKey(String seed) throws Exception {
@@ -123,4 +125,62 @@ public class XDigestUtils extends DigestUtils        {
         SecretKey secretKey = kg.generateKey();
         return encryptBASE64(secretKey.getEncoded());
     }
+
+
+    /**
+     * aes-256-ecb-PKCS7Padding 解密
+     *
+     * @param src
+     * @param key
+     * @return
+     * @throws Exception
+     */
+    public static String aes256EcbPKCS7PaddingDecrypt(String src, String key) throws Exception {
+
+        byte[] bytes = aesDecrypt(src, key, 256, "ECB", "PKCS7Padding");
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * AES解密
+     *
+     * @param src         密文
+     * @param key         秘钥
+     * @param blockSize   块大小 128-192-256
+     * @param blockAl     块解密算法
+     * @param paddingMode 补齐模式
+     * @return
+     */
+    public static byte[] aesDecrypt(String src, String key, Integer blockSize, String blockAl, String paddingMode) throws Exception {
+
+        if (key == null || "".equals(key)) {
+            throw new Exception("key can not be empty");
+        }
+        switch (blockSize) {
+            case 128:
+                if (key.length() != 16) {
+                    throw new Exception(String.format("block size is %d, the key length must be 16", blockSize));
+                }
+                break;
+            case 192:
+                break;
+            case 256:
+                if (key.length() != 32) {
+                    throw new Exception(String.format("block size is %d, the key length must be 32", blockSize));
+                }
+                break;
+            default:
+                throw new Exception("block size only can be 128,192,256");
+        }
+        KeyGenerator aesGen = KeyGenerator.getInstance("AES");
+        aesGen.init(blockSize, new SecureRandom(src.getBytes()));
+        SecretKey secretKey = aesGen.generateKey();
+        byte[] encoded = secretKey.getEncoded();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(encoded, "AES");
+        Cipher cipher = Cipher.getInstance(String.format("AES/%s/%s", blockAl, paddingMode));
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+        return cipher.doFinal(src.getBytes());
+    }
+
+
 }

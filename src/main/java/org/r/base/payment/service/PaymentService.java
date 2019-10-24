@@ -40,7 +40,7 @@ public interface PaymentService {
      * @param refundCommon 退款的参数
      * @return
      */
-    Boolean refund(RefundCommon refundCommon);
+    Boolean refund(RefundCommon refundCommon) throws PayException;
 
 
     /**

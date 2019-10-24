@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.r.base.payment.entity.ProtocolProvider;
 import org.r.base.payment.entity.RequestBo;
 import org.r.base.payment.entity.RespondBo;
 import org.r.base.payment.enums.ProtocolEnum;
@@ -14,12 +15,10 @@ import org.r.base.payment.service.HttpRequestStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import java.net.Socket;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -98,55 +97,31 @@ public class DefaultHttpServiceImpl implements HttpRequestService {
      * @param protocol 协议
      * @return 客户端
      */
-    private OkHttpClient buildClient(ProtocolEnum protocol) {
+    private OkHttpClient buildClient(ProtocolProvider protocol) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        switch (protocol) {
+        switch (protocol.getProtocolType()) {
             default:
             case http:
                 break;
             case https:
                 try {
-                    X509TrustManager trustManager = getTrustManager();
-                    SSLContext sslContext = SSLContext.getInstance("TLS");
-                    sslContext.init(null, new TrustManager[]{trustManager}, null);
+                    X509TrustManager trustManager = protocol.getTrustManager();
+                    SSLContext sslContext = protocol.getSslContext();
+                    KeyManager keyManager = protocol.getKeyManager();
+                    sslContext.init(new KeyManager[]{keyManager}, new TrustManager[]{trustManager}, null);
                     builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                    log.error("can not creat ssl context.Missing tls algorithm");
                 } catch (KeyManagementException e) {
                     e.printStackTrace();
                     log.error("can not creat ssl context.KeyManagement off");
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                    log.error("can not creat ssl context.Missing tls algorithm");
+                } catch (KeyStoreException e) {
+                    e.printStackTrace();
                 }
                 break;
         }
         return builder.build();
     }
-
-
-    /**
-     * 获取证书信任管理器
-     *
-     * @return
-     */
-    private X509TrustManager getTrustManager() {
-
-        return new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
-            }
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
-    }
-
 
 }

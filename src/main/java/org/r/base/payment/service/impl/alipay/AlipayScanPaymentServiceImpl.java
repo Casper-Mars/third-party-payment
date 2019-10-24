@@ -25,7 +25,7 @@ public class AlipayScanPaymentServiceImpl extends AbstractAlipayServiceImpl<Alip
     protected AlipayTradePrecreateRequest buildPayParam(PayCommon requestParam) {
         AlipayTradePrecreateRequest payRequest = new AlipayTradePrecreateRequest();
         payRequest.setBizContent("{" +
-                "    \"out_trade_no\":\"" + requestParam.getOutTradeNo() + "\"," +
+                "    \"out_trade_no\":\"" + requestParam.getOutTradeNo().getOutTradeNo() + "\"," +
                 "    \"total_amount\":\"" + requestParam.getPayAmount() + "\"," +
                 "    \"subject\":\"" + requestParam.getTitle() + "\"," +
                 "    \"store_id\":\"admin\"" +

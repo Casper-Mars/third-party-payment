@@ -1,7 +1,6 @@
 package org.r.base.payment.entity;
 
 import lombok.Data;
-import org.r.base.payment.enums.ProtocolEnum;
 import org.r.base.payment.enums.RequestMethodEnum;
 
 /**
@@ -22,7 +21,7 @@ public class RequestBo {
     /**
      * 协议类型
      */
-    private ProtocolEnum protocol;
+    private ProtocolProvider protocol;
 
     /**
      * 请求方法

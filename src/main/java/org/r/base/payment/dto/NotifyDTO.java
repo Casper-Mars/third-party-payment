@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- *
  * @author zj
  * @date 2019/3/22
  */
@@ -18,6 +17,7 @@ public class NotifyDTO {
      * 支付流水号
      */
     private String tradeNo;
+
     /**
      * 支付状态
      */
@@ -28,8 +28,17 @@ public class NotifyDTO {
      */
     private String outTradeNo;
 
+    /**
+     * 失败的信息
+     */
+    private String failMsg;
+
     public static NotifyDTO fail() {
-        return new NotifyDTO(null, false, null);
+        return new NotifyDTO("", false, "", "");
+    }
+
+    public static NotifyDTO fail(String msg) {
+        return new NotifyDTO("", false, "", msg);
     }
 
 

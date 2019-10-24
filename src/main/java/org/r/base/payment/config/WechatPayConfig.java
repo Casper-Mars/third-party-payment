@@ -39,4 +39,14 @@ public class WechatPayConfig {
      */
     private String requestMethod;
 
+    /**
+     * api证书位置，绝对路径
+     */
+    private String p12CertPath;
+
+    /**
+     * 退款地址
+     */
+    private String refundUrl;
+
 }
