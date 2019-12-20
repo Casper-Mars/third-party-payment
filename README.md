@@ -1,5 +1,6 @@
 # 配置方式
 在spring的配置文件注入三方支付的配置
+
 ##例子
      <!--微信支付配置-->
         <bean id="wechatPayConfig" class="org.r.base.payment.config.WechatPayConfig">
