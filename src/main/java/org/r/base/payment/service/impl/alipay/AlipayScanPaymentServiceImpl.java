@@ -27,7 +27,7 @@ public class AlipayScanPaymentServiceImpl extends AbstractAlipayServiceImpl<Alip
         payRequest.setBizContent("{" +
                 "    \"out_trade_no\":\"" + requestParam.getOutTradeNo().getOutTradeNo() + "\"," +
                 "    \"total_amount\":\"" + requestParam.getPayAmount() + "\"," +
-                "    \"subject\":\"" + requestParam.getTitle() + "\"," +
+                "    \"subject\":\"" + requestParam.getTitle() + "\"" +
                 "    }");
         payRequest.setNotifyUrl(requestParam.getNotifyUrl());
         return payRequest;
