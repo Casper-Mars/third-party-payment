@@ -41,6 +41,20 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
      */
     protected abstract T buildPayParam(PayCommon requestParam);
 
+
+    /**
+     * 实现支付的细节,每一种支付的细节不一样,这里提供一种默认的实现方式
+     *
+     * @param payRequest   请求
+     * @param alipayClient 执行请求的客户端类
+     * @return 支付请求的结果
+     * @throws AlipayApiException 支付逻辑的异常
+     */
+    protected R pay0(T payRequest, AlipayClient alipayClient) throws AlipayApiException {
+        return alipayClient.execute(payRequest);
+    }
+
+
     /**
      * 支付接口
      *
@@ -52,7 +66,7 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
 
         AlipayClient alipayClient = alipayConfig.getAlipayClient();
         try {
-            R execute = alipayClient.execute(buildPayParam(payCommon));
+            R execute = pay0(buildPayParam(payCommon), alipayClient);
             return execute.getBody();
         } catch (AlipayApiException e) {
             e.printStackTrace();
@@ -84,7 +98,7 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         }
 
         if (successStatus.equals(tradeStatus)) {
-            return new NotifyDTO(tradeNo, true, outTradeNo,"");
+            return new NotifyDTO(tradeNo, true, outTradeNo, "");
         } else {
             return NotifyDTO.fail();
         }

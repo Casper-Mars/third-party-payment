@@ -1,7 +1,7 @@
 # 配置方式
 在spring的配置文件注入三方支付的配置
 
-##例子
+## 例子
      <!--微信支付配置-->
         <bean id="wechatPayConfig" class="org.r.base.payment.config.WechatPayConfig">
             <property name="apiKey" value="${wechat.apiKey}"/>
@@ -28,3 +28,7 @@
             <property name="format" value="${alipay.format}"/>
             <property name="gatewayUrl" value="${alipay.gatewayUrl}"/>
         </bean>
+
+## 或者
+     <import resource="classpath*:payment-context.xml" />
+### 注意!直接import的方式产生的bean不是动态代理的bean,使用上需要注意配合动态代理

@@ -23,6 +23,11 @@ public class PayCommon implements Serializable {
     private String notifyUrl;
 
     /**
+     * 取消支付时跳转的url
+     */
+    private String cancelUrl;
+
+    /**
      * 支付金额
      */
     private BigDecimal payAmount;
@@ -48,16 +53,14 @@ public class PayCommon implements Serializable {
      * @param serverPath 服务器地址，用来设置回调的接口地址
      * @param body       显示的内容
      * @param title      显示的标题
-     * @param ip         请求者ip地址
      * @return
      */
-    public PayCommon(String paySn, BigDecimal amount, String serverPath, String body, String title, String ip) {
+    public PayCommon(String paySn, BigDecimal amount, String serverPath, String body, String title) {
         this.outTradeNo = new OutTradeNoBo(paySn);
         this.notifyUrl = serverPath;
         this.payAmount = amount;
         this.title = title;
         this.body = body;
-        this.remoteIp = ip;
     }
 
 }

@@ -16,13 +16,26 @@ public enum PaymentEnum {
      */
     alipayScan("alipayScanPaymentPlugin", "asp"),
     /**
+     * 阿里pc网页支付
+     */
+//    alipayPcPage("alipayPcPagePaymentPlugin", "appp"),
+    /**
      * 微信app支付
      */
     wechatMobile("wechatMobilePaymentPlugin", "wmp"),
     /**
      * 微信扫码支付
      */
-    wechatScan("wechatScanPaymentPlugin", "wsp");
+    wechatScan("wechatScanPaymentPlugin", "wsp"),
+    /**
+     * paypal支付
+     */
+    paypalPc("paypalPcPaymentPlugin", "pppp"),
+    /**
+     * paypal移动支付
+     */
+    paypalMobile("paypalMobilePaymentPlugin", "pmpp"),
+    ;
 
 
     /**

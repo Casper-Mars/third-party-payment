@@ -1,7 +1,6 @@
 package org.r.base.payment.config;
 
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 /**
  * @author casper

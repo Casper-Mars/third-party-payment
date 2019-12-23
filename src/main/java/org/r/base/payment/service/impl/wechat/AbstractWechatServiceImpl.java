@@ -413,16 +413,21 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
                 return SSLContext.getInstance("TLS");
             }
 
+            /**
+             * @return 秘钥管理器,如果没有证书返回null,微信支付不需要证书,此时返回null不会影响后面的逻辑
+             * @throws KeyStoreException
+             */
             @Override
             public KeyManager getKeyManager() throws KeyStoreException {
-
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
                 try {
                     keyStore.load(new FileInputStream(wechatPayConfig.getP12CertPath()), wechatPayConfig.getMchid().toCharArray());
                     KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
                     kmf.init(keyStore, wechatPayConfig.getMchid().toCharArray());
                     return kmf.getKeyManagers()[0];
-                } catch (IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
+                } catch (IOException e) {
+//                    e.printStackTrace();
+                }catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e){
                     e.printStackTrace();
                 }
                 return null;

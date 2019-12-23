@@ -11,7 +11,7 @@
     <context:property-placeholder
             ignore-resource-not-found="true"
             ignore-unresolvable="true"
-            location="classpath*:/config.properties"
+            location="classpath*:/payment/config.properties"
     />
     <!--微信支付配置-->
     <bean id="wechatPayConfig" class="org.r.base.payment.config.WechatPayConfig">
@@ -39,6 +39,12 @@
         <property name="format" value="${alipay.format}"/>
         <property name="gatewayUrl" value="${alipay.gatewayUrl}"/>
     </bean>
-
+    <!--paypal支付配置-->
+    <bean id="paypalConfig" class="org.r.base.payment.config.PaypalConfig">
+        <property name="clientId" value="${paypal.clientId}"/>
+        <property name="clientSecret" value="${paypal.clientSecret}"/>
+        <property name="mode" value="${paypal.mode}"/>
+        <property name="currency" value="${paypal.currency}"/>
+    </bean>
 
 </beans>
