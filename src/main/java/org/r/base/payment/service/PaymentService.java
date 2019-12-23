@@ -1,6 +1,5 @@
 package org.r.base.payment.service;
 
-import com.alipay.api.AlipayApiException;
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.PayCommon;
 import org.r.base.payment.entity.RefundCommon;

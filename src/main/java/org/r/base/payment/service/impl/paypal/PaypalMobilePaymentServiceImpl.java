@@ -29,12 +29,7 @@ public class PaypalMobilePaymentServiceImpl extends AbstractPaypalPaymentService
         map.put("currency", tr.getAmount().getCurrency());
         map.put("note_to_payer", payment.getNoteToPayer());
         map.put("payAmount", tr.getAmount().getTotal());
-        /*原来的账单号前后会被添加其他数据,例如:OTN_POD20191016782539_263218,需要分割出来*/
-        String[] s = tr.getInvoiceNumber().split("_");
-        if (s.length < 3) {
-            return null;
-        }
-        map.put("paySn", s[1]);
+        map.put("paySn", tr.getInvoiceNumber());
         return JSONObject.toJSONString(map);
     }
 }
