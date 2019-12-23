@@ -57,16 +57,16 @@ public class PaymentServiceTest {
         );
         payCommon.setCancelUrl("http://47.244.62.252:18080/api/api/common/test");
         String pay = "";
-        try {
-//            pay = amp.pay(payCommon);
-//            pay = wsp.pay(payCommon);
-//            pay = wmp.pay(payCommon);
-//            pay = pmpp.pay(payCommon);
-            pay = pppp.pay(payCommon);
-            System.out.println(pay);
-        } catch (PayException e) {
-            e.printStackTrace();
-        }
+//        try {
+////            pay = amp.pay(payCommon);
+////            pay = wsp.pay(payCommon);
+////            pay = wmp.pay(payCommon);
+////            pay = pmpp.pay(payCommon);
+//            pay = pppp.pay(payCommon);
+//            System.out.println(pay);
+//        } catch (PayException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Test

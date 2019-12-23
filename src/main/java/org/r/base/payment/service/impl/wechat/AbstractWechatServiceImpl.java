@@ -42,7 +42,7 @@ import java.util.TreeMap;
 @Slf4j
 public abstract class AbstractWechatServiceImpl implements PaymentService {
 
-    @Autowired
+    @Autowired(required = false)
     protected WechatPayConfig wechatPayConfig;
     @Autowired
     private HttpRequestService httpRequestService;
@@ -174,7 +174,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     @Override
     public String pay(PayCommon payCommon) throws PayException {
         String param = buildParam(payCommon);
-        RespondBo respondBo = doRequest(param,wechatPayConfig.getGatewayUrl());
+        RespondBo respondBo = doRequest(param, wechatPayConfig.getGatewayUrl());
         return getResult((String) respondBo.getResult());
     }
 
@@ -242,7 +242,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     public Boolean refund(RefundCommon refundCommon) throws PayException {
 
         String param = buildRefundParam(refundCommon);
-        RespondBo respondBo = doRequest(param,wechatPayConfig.getRefundUrl());
+        RespondBo respondBo = doRequest(param, wechatPayConfig.getRefundUrl());
         String result = (String) respondBo.getResult();
         /*检查返回值*/
         Map<String, String> resultParam = getParam(result);
@@ -260,7 +260,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     }
 
 
-    private RespondBo doRequest(String param,String url) throws PayException {
+    private RespondBo doRequest(String param, String url) throws PayException {
         RequestBo requestBo = new RequestBo();
         requestBo.setParam(param);
         requestBo.setProtocol(getPayProtocol());
@@ -414,7 +414,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
             }
 
             /**
-             * @return 秘钥管理器,如果没有证书返回null,微信支付不需要证书,此时返回null不会影响后面的逻辑
+             * @return 秘钥管理器, 如果没有证书返回null, 微信支付不需要证书, 此时返回null不会影响后面的逻辑
              * @throws KeyStoreException
              */
             @Override
@@ -427,7 +427,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
                     return kmf.getKeyManagers()[0];
                 } catch (IOException e) {
 //                    e.printStackTrace();
-                }catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e){
+                } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
                     e.printStackTrace();
                 }
                 return null;

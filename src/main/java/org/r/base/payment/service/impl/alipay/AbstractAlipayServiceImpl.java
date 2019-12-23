@@ -30,7 +30,7 @@ import java.util.Map;
 @Slf4j
 public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R extends AlipayResponse> implements PaymentService {
 
-    @Autowired
+    @Autowired(required = false)
     protected AlipayConfig alipayConfig;
 
     /**

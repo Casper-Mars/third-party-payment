@@ -26,7 +26,7 @@ import java.util.List;
 public abstract class AbstractPaypalPaymentServiceImpl implements PaymentService {
 
 
-    @Autowired
+    @Autowired(required = false)
     private PaypalConfig paypalConfig;
 
     /**
