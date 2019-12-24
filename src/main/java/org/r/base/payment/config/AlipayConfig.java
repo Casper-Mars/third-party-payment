@@ -8,7 +8,7 @@ import lombok.Data;
  * @author casper
  */
 @Data
-public class AlipayConfig {
+public class AlipayConfig implements PaymentConfig{
 
     /**
      * 支付宝处理完请求后，当前页面跳转到商户指定页面的路径，可空

@@ -10,7 +10,7 @@ import lombok.Data;
  * @date 19-12-23 上午10:06
  **/
 @Data
-public class PaypalConfig {
+public class PaypalConfig implements PaymentConfig{
 
 
     /**

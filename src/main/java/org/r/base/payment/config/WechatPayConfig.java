@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 19-10-16 下午1:42
  **/
 @Data
-public class WechatPayConfig {
+public class WechatPayConfig implements PaymentConfig{
 
     /**
      * appid

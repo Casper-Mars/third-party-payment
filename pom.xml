@@ -40,6 +40,7 @@
         <commons-codec>1.13</commons-codec>
         <slf4j-api>1.7.25</slf4j-api>
         <junit-test-verison>4.12</junit-test-verison>
+        <aop-version>1.9.5</aop-version>
         <maven-url>http://114.55.253.170</maven-url>
     </properties>
 
@@ -70,6 +71,22 @@
             <artifactId>spring-test</artifactId>
             <version>${spring-version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring-version}</version>
+        </dependency>
+        <!--aop-->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aop-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aop-version}</version>
         </dependency>
         <!--lombak插件-->
         <dependency>
@@ -129,6 +146,7 @@
             <artifactId>rest-api-sdk</artifactId>
             <version>${paypal-version}</version>
         </dependency>
+
     </dependencies>
 
 
