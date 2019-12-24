@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.r.base.payment.config.AlipayConfig;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,5 +101,16 @@ public class PaymentServiceTest {
 
     @Test
     public void refundNotifyCallBack() {
+    }
+
+
+    @Test
+    public void query() {
+
+        QueryCommon queryCommon = new QueryCommon("2019080322001417500506840781");
+
+        String query = amp.query(queryCommon);
+        System.out.println(query);
+
     }
 }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.r.base.payment.config.PaypalConfig;
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
 import org.r.base.payment.service.PaymentService;
@@ -156,6 +157,17 @@ public abstract class AbstractPaypalPaymentServiceImpl implements PaymentService
      */
     @Override
     public NotifyDTO refundNotifyCallBack(HttpServletRequest request, HttpServletResponse response, String billSn) {
+        return null;
+    }
+
+    /**
+     * 查询账单
+     *
+     * @param queryCommon 查询参数
+     * @return
+     */
+    @Override
+    public String query(QueryCommon queryCommon) {
         return null;
     }
 }

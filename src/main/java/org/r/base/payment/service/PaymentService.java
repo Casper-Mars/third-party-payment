@@ -2,6 +2,7 @@ package org.r.base.payment.service;
 
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
 
@@ -52,5 +53,13 @@ public interface PaymentService {
      */
     NotifyDTO refundNotifyCallBack(HttpServletRequest request, HttpServletResponse response, String billSn);
 
+
+    /**
+     * 查询账单
+     *
+     * @param queryCommon 查询参数
+     * @return
+     */
+    String query(QueryCommon queryCommon);
 
 }

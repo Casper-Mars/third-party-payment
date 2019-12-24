@@ -5,13 +5,16 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayRequest;
 import com.alipay.api.AlipayResponse;
+import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.r.base.payment.config.AlipayConfig;
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.OutTradeNoBo;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
 import org.r.base.payment.service.PaymentService;
@@ -87,11 +90,11 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         /*支付成功的标志位*/
         String successStatus = "TRADE_SUCCESS";
 
-        String tradeNo = request.getParameter("trade_no");
+        String tradeNo = request.getParameter("tradeNo");
         String tradeStatus = request.getParameter("trade_status");
         String outTradeNo = request.getParameter("out_trade_no");
         outTradeNo = OutTradeNoBo.extractPaySn(outTradeNo);
-        log.info("接收到支付宝异步通知:out_trade_no:" + outTradeNo + " trade_no：" + tradeNo + " trade_status_str:" + tradeStatus);
+        log.info("接收到支付宝异步通知:out_trade_no:" + outTradeNo + " tradeNo：" + tradeNo + " trade_status_str:" + tradeStatus);
         log.info("接收到支付宝异步通知：" + request.getParameterMap().toString());
         if (StringUtils.isEmpty(tradeNo) || StringUtils.isEmpty(tradeStatus) || StringUtils.isEmpty(outTradeNo) || !outTradeNo.equals(billSn)) {
             return NotifyDTO.fail();
@@ -145,6 +148,40 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         throw new RuntimeException("支付宝不支付退款回调");
     }
 
+    /**
+     * 查询账单
+     *
+     * @param queryCommon 查询参数
+     * @return
+     */
+    @Override
+    public String query(QueryCommon queryCommon) {
+
+        AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+        /*构造查询参数*/
+        Map<String, Object> param = new HashMap<>(10);
+        param.put("trade_no", queryCommon.getTradeNo());
+        request.setBizContent(JSONObject.toJSONString(param));
+        AlipayClient alipayClient = alipayConfig.getAlipayClient();
+        String result;
+        try {
+            AlipayTradeQueryResponse response = alipayClient.execute(request);
+            log.info(response.getBody());
+            if (response.isSuccess()) {
+                result = response.getBody();
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                Map<String, Object> map = jsonObject;
+                result = JSONObject.toJSONString(map.get("alipay_trade_query_response"));
+            } else {
+                result = "";
+            }
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+            throw new RuntimeException("支付宝账单查询异常");
+        }
+        return result;
+    }
+
 
     /**
      * 构建退款参数
@@ -154,8 +191,8 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
      */
     private AlipayTradeRefundRequest buildRefundParam(RefundCommon refundCommon) {
         Map<String, Object> param = new HashMap<>(10);
-        param.put("out_trade_no", refundCommon.getOutTraceNo());
         param.put("trade_no", refundCommon.getTraceNo());
+        param.put("out_trade_no", refundCommon.getOutTraceNo());
         param.put("refund_amount", refundCommon.getRefundFee());
         param.put("refund_reason", refundCommon.getRefundReason());
         param.put("out_request_no", refundCommon.getOutRequestNo());

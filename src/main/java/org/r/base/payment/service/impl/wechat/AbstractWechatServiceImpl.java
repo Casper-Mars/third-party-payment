@@ -325,6 +325,17 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     }
 
     /**
+     * 查询账单
+     *
+     * @param queryCommon 查询参数
+     * @return
+     */
+    @Override
+    public String query(QueryCommon queryCommon) {
+        return null;
+    }
+
+    /**
      * MD5签名
      *
      * @param content
