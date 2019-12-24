@@ -6,7 +6,7 @@
 
     <groupId>org.r.base</groupId>
     <artifactId>payment</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
 
     <build>
         <plugins>
@@ -106,7 +106,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${javax-servlet-api}</version>
-            <scope>provided</scope>
         </dependency>
         <!--jdom-->
         <dependency>
