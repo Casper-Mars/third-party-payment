@@ -1,5 +1,6 @@
 package org.r.base.payment.service.impl.alipay;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
@@ -7,11 +8,14 @@ import com.alipay.api.response.AlipayTradePagePayResponse;
 import org.r.base.payment.entity.PayCommon;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author casper
  * @date 19-12-20 下午1:37
  **/
-//@Service("alipayPcPagePaymentPlugin")
+@Service("alipayPcPagePaymentPlugin")
 public class AlipayPcPagePaymentServiceImpl extends AbstractAlipayServiceImpl<AlipayTradePagePayRequest, AlipayTradePagePayResponse> {
 
     /**
@@ -22,7 +26,15 @@ public class AlipayPcPagePaymentServiceImpl extends AbstractAlipayServiceImpl<Al
      */
     @Override
     protected AlipayTradePagePayRequest buildPayParam(PayCommon requestParam) {
-        return null;
+        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
+        Map<String, Object> params = new HashMap<>(5);
+        params.put("out_trade_no", requestParam.getOutTradeNo().getOutTradeNo());
+        params.put("product_code", "FAST_INSTANT_TRADE_PAY");
+        params.put("total_amount", requestParam.getPayAmount().toString());
+        params.put("subject", requestParam.getTitle());
+        params.put("body", requestParam.getBody());
+        request.setBizContent(JSONObject.toJSONString(params));
+        return request;
     }
 
     /**

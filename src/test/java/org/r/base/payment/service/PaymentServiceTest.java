@@ -26,6 +26,9 @@ public class PaymentServiceTest {
     @Autowired
     @Qualifier("alipayScanPaymentPlugin")
     private PaymentService asp;
+    @Autowired
+    @Qualifier("alipayPcPagePaymentPlugin")
+    private PaymentService appp;
 
     @Autowired
     @Qualifier("wechatMobilePaymentPlugin")
@@ -63,7 +66,8 @@ public class PaymentServiceTest {
 //            pay = wmp.pay(payCommon);
 //            pay = pmpp.pay(payCommon);
 //            pay = pppp.pay(payCommon);
-            pay = asp.pay(payCommon);
+//            pay = asp.pay(payCommon);
+            pay = appp.pay(payCommon);
             System.out.println(pay);
         } catch (PayException e) {
             e.printStackTrace();

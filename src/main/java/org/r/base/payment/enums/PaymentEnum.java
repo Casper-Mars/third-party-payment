@@ -18,7 +18,7 @@ public enum PaymentEnum {
     /**
      * 阿里pc网页支付
      */
-//    alipayPcPage("alipayPcPagePaymentPlugin", "appp"),
+    alipayPcPage("alipayPcPagePaymentPlugin", "appp"),
     /**
      * 微信app支付
      */
