@@ -17,7 +17,7 @@
     <context:property-placeholder
             ignore-resource-not-found="true"
             ignore-unresolvable="true"
-            location="classpath*:/payment/config.properties"
+            location="classpath:/payment/config.properties"
     />
     <!--微信支付配置-->
     <bean id="wechatPayConfig" class="org.r.base.payment.config.WechatPayConfig">
@@ -25,6 +25,7 @@
         <property name="appSecret" value="${wechat.appSecret}"/>
         <property name="gatewayUrl" value="${wechat.gatewayUrl}"/>
         <property name="refundUrl" value="${wechat.refundUrl}"/>
+        <property name="queryUrl" value="${wechat.queryUrl}"/>
         <property name="mchid" value="${wechat.mchid}"/>
         <property name="requestMethod" value="${wechat.requestMethod}"/>
         <property name="appId" value="${wechat.appId}"/>

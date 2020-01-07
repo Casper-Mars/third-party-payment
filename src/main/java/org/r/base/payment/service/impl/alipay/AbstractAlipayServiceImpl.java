@@ -12,10 +12,7 @@ import com.alipay.api.response.AlipayTradeRefundResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.r.base.payment.config.AlipayConfig;
 import org.r.base.payment.dto.NotifyDTO;
-import org.r.base.payment.entity.OutTradeNoBo;
-import org.r.base.payment.entity.PayCommon;
-import org.r.base.payment.entity.QueryCommon;
-import org.r.base.payment.entity.RefundCommon;
+import org.r.base.payment.entity.*;
 import org.r.base.payment.exception.PayException;
 import org.r.base.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +152,7 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
      * @return
      */
     @Override
-    public String query(QueryCommon queryCommon) {
+    public QueryBo query(QueryCommon queryCommon) throws PayException {
 
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         /*构造查询参数*/
@@ -167,19 +164,22 @@ public abstract class AbstractAlipayServiceImpl<T extends AlipayRequest<R>, R ex
         try {
             AlipayTradeQueryResponse response = alipayClient.execute(request);
             log.info(response.getBody());
+            QueryBo queryBo = new QueryBo();
+            queryBo.setMetaData(response.getBody());
             if (response.isSuccess()) {
                 result = response.getBody();
-                JSONObject jsonObject = JSONObject.parseObject(result);
-                Map<String, Object> map = jsonObject;
+                Map<String, Object> map = JSONObject.parseObject(result);
                 result = JSONObject.toJSONString(map.get("alipay_trade_query_response"));
+                queryBo.setSuccess(true);
+                queryBo.setData(result);
             } else {
-                result = "";
+                queryBo.setSuccess(false);
             }
+            return queryBo;
         } catch (AlipayApiException e) {
             e.printStackTrace();
-            throw new RuntimeException("支付宝账单查询异常");
+            throw new PayException("支付宝账单查询异常");
         }
-        return result;
     }
 
 

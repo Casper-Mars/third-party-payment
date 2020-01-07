@@ -1,5 +1,6 @@
 package org.r.base.payment.service.impl.wechat;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.jdom.Element;
 import org.r.base.payment.config.WechatPayConfig;
@@ -73,11 +74,8 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
     private String buildParam(PayCommon requestParam) {
 
         /*构造参数map，便于之后生成签名，使用treemap为了获得排序集合，满足微信支付文档的要求*/
-        Map<String, String> param = new TreeMap<>(String::compareToIgnoreCase);
-        param.put("appid", wechatPayConfig.getAppId());
-        param.put("mch_id", wechatPayConfig.getMchid());
+        Map<String, String> param = getBaseParam();
         param.put("trade_type", getTradeType());
-        param.put("nonce_str", this.createNoncestr());
         param.put("spbill_create_ip", requestParam.getRemoteIp());
         param.put("body", requestParam.getBody());
         param.put("out_trade_no", requestParam.getOutTradeNo().getOutTradeNo());
@@ -94,10 +92,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
      */
     protected String buildRefundParam(RefundCommon refundCommon) {
         /*构造参数map，便于之后生成签名，使用treemap为了获得排序集合，满足微信支付文档的要求*/
-        Map<String, String> param = new TreeMap<>(String::compareToIgnoreCase);
-        param.put("appid", wechatPayConfig.getAppId());
-        param.put("mch_id", wechatPayConfig.getMchid());
-        param.put("nonce_str", this.createNoncestr());
+        Map<String, String> param = getBaseParam();
         param.put("out_refund_no", refundCommon.getOutRefundNo());
         param.put("transaction_id", refundCommon.getTraceNo());
         param.put("refund_fee", String.valueOf(refundCommon.getRefundFee().multiply(new BigDecimal(100)).intValue()));
@@ -271,8 +266,7 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
         }
         requestBo.setMethod(RequestMethodEnum.of(wechatPayConfig.getRequestMethod()));
         requestBo.setUrl(url);
-        RespondBo respondBo = httpRequestService.doRequest(requestBo);
-        return respondBo;
+        return httpRequestService.doRequest(requestBo);
     }
 
 
@@ -331,8 +325,35 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
      * @return
      */
     @Override
-    public String query(QueryCommon queryCommon) {
-        return null;
+    public QueryBo query(QueryCommon queryCommon) throws PayException {
+        Map<String, String> param = getBaseParam();
+        param.put("transaction_id", queryCommon.getTradeNo());
+        String s = build0(param);
+        RespondBo respondBo;
+        try {
+            respondBo = doRequest(s, wechatPayConfig.getQueryUrl());
+            String result = (String) respondBo.getResult();
+            /*检查返回值*/
+            Map<String, String> resultParam = getParam(result);
+            String returnCode = resultParam.get("return_code");
+            if (StringUtils.isEmpty(returnCode) || "FAIL".equalsIgnoreCase(returnCode)) {
+                log.error(String.format("wechat refund fail:%s", resultParam.get("return_msg")));
+                return QueryBo.fail(resultParam.get("return_msg"), result);
+            }
+            String resultCode = resultParam.get("result_code");
+            if (StringUtils.isEmpty(resultCode) || "FAIL".equalsIgnoreCase(resultCode)) {
+                log.error(String.format("wechat refund fail,err_code:%s,err_desc:%s", resultParam.get("err_code"), resultParam.get("err_code_des")));
+                return QueryBo.fail(resultParam.get("err_code_des"), result);
+            }
+            QueryBo queryBo = new QueryBo();
+            queryBo.setMetaData(result);
+            queryBo.setSuccess(true);
+            queryBo.setData(JSONObject.toJSONString(resultParam));
+            return queryBo;
+        } catch (PayException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     /**
@@ -450,5 +471,20 @@ public abstract class AbstractWechatServiceImpl implements PaymentService {
             }
         };
     }
+
+
+    /**
+     * 封装基础的参数
+     *
+     * @return
+     */
+    private Map<String, String> getBaseParam() {
+        Map<String, String> param = new TreeMap<>(String::compareToIgnoreCase);
+        param.put("appid", wechatPayConfig.getAppId());
+        param.put("mch_id", wechatPayConfig.getMchid());
+        param.put("nonce_str", this.createNoncestr());
+        return param;
+    }
+
 
 }

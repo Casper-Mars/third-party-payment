@@ -1,5 +1,6 @@
 package org.r.base.payment.service.impl.paypal;
 
+import com.alibaba.fastjson.JSONObject;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.r.base.payment.config.PaypalConfig;
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryBo;
 import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
@@ -167,7 +169,17 @@ public abstract class AbstractPaypalPaymentServiceImpl implements PaymentService
      * @return
      */
     @Override
-    public String query(QueryCommon queryCommon) {
-        return null;
+    public QueryBo query(QueryCommon queryCommon) throws PayException {
+        try {
+            Payment payment = Payment.get(paypalConfig.getApiContext(), queryCommon.getTradeNo());
+            QueryBo queryBo = new QueryBo();
+            queryBo.setSuccess(true);
+            queryBo.setMetaData(JSONObject.toJSONString(payment));
+            queryBo.setData(queryBo.getMetaData());
+            return queryBo;
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+            throw new PayException(e.getMessage());
+        }
     }
 }

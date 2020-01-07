@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 19-10-16 下午1:42
  **/
 @Data
-public class WechatPayConfig implements PaymentConfig{
+public class WechatPayConfig implements PaymentConfig {
 
     /**
      * appid
@@ -30,10 +30,6 @@ public class WechatPayConfig implements PaymentConfig{
      */
     private String tradeType;
     /**
-     * 请求地址
-     */
-    private String gatewayUrl;
-    /**
      * 请求方法
      */
     private String requestMethod;
@@ -44,8 +40,19 @@ public class WechatPayConfig implements PaymentConfig{
     private String p12CertPath;
 
     /**
+     * 请求地址
+     */
+    private String gatewayUrl;
+
+    /**
      * 退款地址
      */
     private String refundUrl;
+
+    /**
+     * 查询地址
+     */
+    private String queryUrl;
+
 
 }

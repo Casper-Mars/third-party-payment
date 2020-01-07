@@ -2,6 +2,7 @@ package org.r.base.payment.service;
 
 import org.r.base.payment.dto.NotifyDTO;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryBo;
 import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
@@ -60,6 +61,6 @@ public interface PaymentService {
      * @param queryCommon 查询参数
      * @return
      */
-    String query(QueryCommon queryCommon);
+    QueryBo query(QueryCommon queryCommon) throws PayException;
 
 }

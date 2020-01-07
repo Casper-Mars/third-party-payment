@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.r.base.payment.config.AlipayConfig;
 import org.r.base.payment.entity.PayCommon;
+import org.r.base.payment.entity.QueryBo;
 import org.r.base.payment.entity.QueryCommon;
 import org.r.base.payment.entity.RefundCommon;
 import org.r.base.payment.exception.PayException;
@@ -51,7 +52,7 @@ public class PaymentServiceTest {
     String paySn = "POD20191016782539";
 
     @Test
-    public void pay() {
+    public void pay() throws PayException {
         PayCommon payCommon = new PayCommon(
                 paySn,
                 new BigDecimal("0.01"),
@@ -59,20 +60,17 @@ public class PaymentServiceTest {
                 "test pay",
                 "test pay"
         );
+        payCommon.setRemoteIp("127.0.0.1");
         payCommon.setCancelUrl("http://47.244.62.252:18080/api/api/common/test");
         String pay = "";
-//        try {
-////            pay = amp.pay(payCommon);
-////            pay = wsp.pay(payCommon);
-////            pay = wmp.pay(payCommon);
-////            pay = pmpp.pay(payCommon);
-////            pay = pppp.pay(payCommon);
-////            pay = asp.pay(payCommon);
-//            pay = appp.pay(payCommon);
-//            System.out.println(pay);
-//        } catch (PayException e) {
-//            e.printStackTrace();
-//        }
+//            pay = amp.pay(payCommon);
+//            pay = wsp.pay(payCommon);
+//            pay = wmp.pay(payCommon);
+//            pay = pmpp.pay(payCommon);
+//            pay = pppp.pay(payCommon);
+//            pay = asp.pay(payCommon);
+            pay = appp.pay(payCommon);
+            System.out.println(pay);
     }
 
     @Test
@@ -105,12 +103,12 @@ public class PaymentServiceTest {
 
 
     @Test
-    public void query() {
+    public void query() throws PayException {
 
-        QueryCommon queryCommon = new QueryCommon("2019080322001417500506840781");
-
-        String query = amp.query(queryCommon);
-        System.out.println(query);
+//        QueryCommon queryCommon = new QueryCommon("4200000375201908161650355064");
+//
+//        QueryBo query = wsp.query(queryCommon);
+//        System.out.println(query.getData());
 
     }
 }
