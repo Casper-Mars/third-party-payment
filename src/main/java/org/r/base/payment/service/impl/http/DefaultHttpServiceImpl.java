@@ -8,19 +8,20 @@ import okhttp3.ResponseBody;
 import org.r.base.payment.entity.ProtocolProvider;
 import org.r.base.payment.entity.RequestBo;
 import org.r.base.payment.entity.RespondBo;
-import org.r.base.payment.enums.ProtocolEnum;
 import org.r.base.payment.enums.RequestMethodEnum;
 import org.r.base.payment.service.HttpRequestService;
 import org.r.base.payment.service.HttpRequestStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.net.Socket;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author casper
