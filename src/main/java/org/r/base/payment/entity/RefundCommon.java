@@ -51,5 +51,10 @@ public class RefundCommon {
      */
     private String notifyUrl;
 
+    /**
+     * 交易币种
+     */
+    private String currency;
+
 
 }

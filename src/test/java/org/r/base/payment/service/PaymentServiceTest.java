@@ -51,6 +51,7 @@ public class PaymentServiceTest {
 
     String paySn = "POD20191016782539";
 
+
     @Test
     public void pay() throws PayException {
         PayCommon payCommon = new PayCommon(
@@ -67,10 +68,10 @@ public class PaymentServiceTest {
 //            pay = wsp.pay(payCommon);
 //            pay = wmp.pay(payCommon);
 //            pay = pmpp.pay(payCommon);
-//            pay = pppp.pay(payCommon);
+//        pay = pppp.pay(payCommon);
 //            pay = asp.pay(payCommon);
-            pay = appp.pay(payCommon);
-            System.out.println(pay);
+//            pay = appp.pay(payCommon);
+        System.out.println(pay);
     }
 
     @Test
@@ -80,21 +81,23 @@ public class PaymentServiceTest {
     @Test
     public void refund() {
 
-//        RefundCommon refundCommon = new RefundCommon();
-//        refundCommon.setTraceNo("4200000431201910244485558526");
-//        refundCommon.setRefundFee(new BigDecimal("0.01"));
-//        refundCommon.setOrderFee(new BigDecimal("0.01"));
-//        refundCommon.setOutTraceNo(paySn);
-//        refundCommon.setNotifyUrl("http://39.108.88.133/payment/post/param/" + paySn);
-//        refundCommon.setOutRefundNo("refund"+paySn+"123");
+        RefundCommon refundCommon = new RefundCommon();
+        refundCommon.setTraceNo("PAYID-LWO2OPA7UN241053R845161L");
+        refundCommon.setRefundFee(new BigDecimal("0.01"));
+        refundCommon.setOrderFee(new BigDecimal("0.88"));
+        refundCommon.setCurrency("USD");
+        refundCommon.setOutTraceNo(paySn);
+        refundCommon.setNotifyUrl("http://39.108.88.133/payment/post/param/" + paySn);
+        refundCommon.setOutRefundNo("refund" + paySn + "123");
 //
-//        Boolean refund = false;
-//        try {
+        Boolean refund = false;
+        try {
 //            refund = wsp.refund(refundCommon);
-//        } catch (PayException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println(refund ? "退款成功" : "退款失败");
+            refund = pppp.refund(refundCommon);
+        } catch (PayException e) {
+            e.printStackTrace();
+        }
+        System.out.println(refund ? "退款成功" : "退款失败");
     }
 
     @Test
@@ -105,10 +108,12 @@ public class PaymentServiceTest {
     @Test
     public void query() throws PayException {
 
-//        QueryCommon queryCommon = new QueryCommon("4200000375201908161650355064");
-//
-//        QueryBo query = wsp.query(queryCommon);
-//        System.out.println(query.getData());
+        QueryCommon queryCommon = new QueryCommon("PAYID-LWO2OPA7UN241053R845161L");
+
+        QueryBo query;
+        query = pppp.query(queryCommon);
+//        query = wsp.query(queryCommon);
+        System.out.println(query.getData());
 
     }
 }

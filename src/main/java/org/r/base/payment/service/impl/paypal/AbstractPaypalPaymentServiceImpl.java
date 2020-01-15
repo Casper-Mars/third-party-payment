@@ -146,7 +146,38 @@ public abstract class AbstractPaypalPaymentServiceImpl implements PaymentService
      */
     @Override
     public Boolean refund(RefundCommon refundCommon) throws PayException {
-        return null;
+        try {
+            /*获取卖家号*/
+            Payment payment = null;
+            payment = Payment.get(paypalConfig.getApiContext(), refundCommon.getTraceNo());
+            Transaction transaction = payment.getTransactions().get(0);
+            RelatedResources resources = transaction.getRelatedResources().get(0);
+            String saleId = resources.getSale().getId();
+            /*退款金额信息*/
+            Amount amount = new Amount();
+            if (StringUtils.isEmpty(refundCommon.getCurrency())) {
+                amount.setCurrency(paypalConfig.getCurrency());
+            } else {
+                amount.setCurrency(refundCommon.getCurrency());
+            }
+            amount.setTotal(refundCommon.getRefundFee().toString());
+            /*退款请求*/
+            RefundRequest refundRequest = new RefundRequest();
+            refundRequest.setAmount(amount);
+            /*卖家信息*/
+            Sale sale = new Sale();
+            sale.setId(saleId);
+            /*请求退款*/
+            DetailedRefund refund = sale.refund(paypalConfig.getApiContext(), refundRequest);
+            if ("completed".equals(refund.getState())) {
+                return true;
+            } else {
+                throw new PayException(refund.toJSON());
+            }
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+            throw new PayException(e.getMessage());
+        }
     }
 
     /**
@@ -174,7 +205,7 @@ public abstract class AbstractPaypalPaymentServiceImpl implements PaymentService
             Payment payment = Payment.get(paypalConfig.getApiContext(), queryCommon.getTradeNo());
             QueryBo queryBo = new QueryBo();
             queryBo.setSuccess(true);
-            queryBo.setMetaData(JSONObject.toJSONString(payment));
+            queryBo.setMetaData(payment.toJSON());
             queryBo.setData(queryBo.getMetaData());
             return queryBo;
         } catch (PayPalRESTException e) {
